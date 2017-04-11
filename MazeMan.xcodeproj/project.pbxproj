@@ -17,6 +17,10 @@
 		B5A4E0431E93D7AF00488437 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5A4E0411E93D7AF00488437 /* LaunchScreen.storyboard */; };
 		B5A4E04E1E93D7B000488437 /* MazeManTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4E04D1E93D7B000488437 /* MazeManTests.swift */; };
 		B5A4E0591E93D7B000488437 /* MazeManUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4E0581E93D7B000488437 /* MazeManUITests.swift */; };
+		B5E23D221E9B32B0002E5923 /* VT323-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B5E23D211E9B32B0002E5923 /* VT323-Regular.ttf */; };
+		B5E23D241E9C7D91002E5923 /* GameOver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E23D231E9C7D91002E5923 /* GameOver.swift */; };
+		B5E23D261E9C8886002E5923 /* Pacman.wav in Resources */ = {isa = PBXBuildFile; fileRef = B5E23D251E9C8886002E5923 /* Pacman.wav */; };
+		B5E23D281E9C8BB4002E5923 /* dinoTime.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B5E23D271E9C8BB4002E5923 /* dinoTime.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +57,10 @@
 		B5A4E0541E93D7B000488437 /* MazeManUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MazeManUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A4E0581E93D7B000488437 /* MazeManUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MazeManUITests.swift; sourceTree = "<group>"; };
 		B5A4E05A1E93D7B000488437 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B5E23D211E9B32B0002E5923 /* VT323-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "VT323-Regular.ttf"; sourceTree = "<group>"; };
+		B5E23D231E9C7D91002E5923 /* GameOver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameOver.swift; sourceTree = "<group>"; };
+		B5E23D251E9C8886002E5923 /* Pacman.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Pacman.wav; sourceTree = "<group>"; };
+		B5E23D271E9C8BB4002E5923 /* dinoTime.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = dinoTime.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,9 +116,13 @@
 				B52B796F1E96761C007418ED /* GridCell.swift */,
 				B5A4E03A1E93D7AF00488437 /* GameViewController.swift */,
 				B5A4E03C1E93D7AF00488437 /* Main.storyboard */,
+				B5E23D231E9C7D91002E5923 /* GameOver.swift */,
 				B5A4E03F1E93D7AF00488437 /* Assets.xcassets */,
 				B558C04E1E93E1BA00E29195 /* A4-image-resources */,
 				B5A4E0411E93D7AF00488437 /* LaunchScreen.storyboard */,
+				B5E23D271E9C8BB4002E5923 /* dinoTime.mp3 */,
+				B5E23D251E9C8886002E5923 /* Pacman.wav */,
+				B5E23D211E9B32B0002E5923 /* VT323-Regular.ttf */,
 				B5A4E0441E93D7AF00488437 /* Info.plist */,
 			);
 			path = MazeMan;
@@ -246,8 +258,11 @@
 			files = (
 				B5A4E03E1E93D7AF00488437 /* Main.storyboard in Resources */,
 				B5A4E0401E93D7AF00488437 /* Assets.xcassets in Resources */,
+				B5E23D221E9B32B0002E5923 /* VT323-Regular.ttf in Resources */,
+				B5E23D261E9C8886002E5923 /* Pacman.wav in Resources */,
 				B558C04F1E93E1BA00E29195 /* A4-image-resources in Resources */,
 				B5A4E0431E93D7AF00488437 /* LaunchScreen.storyboard in Resources */,
+				B5E23D281E9C8BB4002E5923 /* dinoTime.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,6 +290,7 @@
 				B5A4E0391E93D7AF00488437 /* GameScene.swift in Sources */,
 				B5A4E03B1E93D7AF00488437 /* GameViewController.swift in Sources */,
 				B5A4E0331E93D7AF00488437 /* AppDelegate.swift in Sources */,
+				B5E23D241E9C7D91002E5923 /* GameOver.swift in Sources */,
 				B52B79701E96761C007418ED /* GridCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

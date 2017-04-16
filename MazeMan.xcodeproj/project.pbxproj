@@ -7,8 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B50384A21E9D3A0D009ABD40 /* Score.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50384A11E9D3A0D009ABD40 /* Score.swift */; };
+		B50384A41EA1B923009ABD40 /* starwin.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384A31EA1B923009ABD40 /* starwin.wav */; };
+		B50384A61EA1B97D009ABD40 /* shoot.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384A51EA1B97D009ABD40 /* shoot.wav */; };
+		B50384A81EA1B9CE009ABD40 /* dinoHit.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384A71EA1B9CE009ABD40 /* dinoHit.wav */; };
+		B50384AA1EA1BA0C009ABD40 /* manhit.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384A91EA1BA0C009ABD40 /* manhit.wav */; };
+		B50384AC1EA1BBF9009ABD40 /* bite.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384AB1EA1BBF9009ABD40 /* bite.wav */; };
+		B50384AE1EA1BC04009ABD40 /* death.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384AD1EA1BC04009ABD40 /* death.wav */; };
+		B50384B01EA1C001009ABD40 /* poof.wav in Resources */ = {isa = PBXBuildFile; fileRef = B50384AF1EA1C001009ABD40 /* poof.wav */; };
+		B50384B21EA1D461009ABD40 /* ending.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B50384B11EA1D461009ABD40 /* ending.mp3 */; };
+		B50384B41EA1D515009ABD40 /* theme.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B50384B31EA1D515009ABD40 /* theme.mp3 */; };
+		B50384B61EA1D6C9009ABD40 /* titlem.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B50384B51EA1D6C9009ABD40 /* titlem.mp3 */; };
 		B52B79701E96761C007418ED /* GridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52B796F1E96761C007418ED /* GridCell.swift */; };
-		B558C04F1E93E1BA00E29195 /* A4-image-resources in Resources */ = {isa = PBXBuildFile; fileRef = B558C04E1E93E1BA00E29195 /* A4-image-resources */; };
 		B5A4E0331E93D7AF00488437 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4E0321E93D7AF00488437 /* AppDelegate.swift */; };
 		B5A4E0391E93D7AF00488437 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4E0381E93D7AF00488437 /* GameScene.swift */; };
 		B5A4E03B1E93D7AF00488437 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4E03A1E93D7AF00488437 /* GameViewController.swift */; };
@@ -41,8 +51,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B50384A11E9D3A0D009ABD40 /* Score.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Score.swift; sourceTree = "<group>"; };
+		B50384A31EA1B923009ABD40 /* starwin.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = starwin.wav; sourceTree = "<group>"; };
+		B50384A51EA1B97D009ABD40 /* shoot.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shoot.wav; sourceTree = "<group>"; };
+		B50384A71EA1B9CE009ABD40 /* dinoHit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = dinoHit.wav; sourceTree = "<group>"; };
+		B50384A91EA1BA0C009ABD40 /* manhit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = manhit.wav; sourceTree = "<group>"; };
+		B50384AB1EA1BBF9009ABD40 /* bite.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bite.wav; sourceTree = "<group>"; };
+		B50384AD1EA1BC04009ABD40 /* death.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = death.wav; sourceTree = "<group>"; };
+		B50384AF1EA1C001009ABD40 /* poof.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = poof.wav; sourceTree = "<group>"; };
+		B50384B11EA1D461009ABD40 /* ending.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = ending.mp3; sourceTree = "<group>"; };
+		B50384B31EA1D515009ABD40 /* theme.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = theme.mp3; sourceTree = "<group>"; };
+		B50384B51EA1D6C9009ABD40 /* titlem.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = titlem.mp3; sourceTree = "<group>"; };
 		B52B796F1E96761C007418ED /* GridCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GridCell.swift; sourceTree = "<group>"; };
-		B558C04E1E93E1BA00E29195 /* A4-image-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "A4-image-resources"; sourceTree = "<group>"; };
 		B5A4E02F1E93D7AF00488437 /* MazeMan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MazeMan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A4E0321E93D7AF00488437 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B5A4E0381E93D7AF00488437 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
@@ -117,10 +137,20 @@
 				B5A4E03A1E93D7AF00488437 /* GameViewController.swift */,
 				B5A4E03C1E93D7AF00488437 /* Main.storyboard */,
 				B5E23D231E9C7D91002E5923 /* GameOver.swift */,
+				B50384A11E9D3A0D009ABD40 /* Score.swift */,
 				B5A4E03F1E93D7AF00488437 /* Assets.xcassets */,
-				B558C04E1E93E1BA00E29195 /* A4-image-resources */,
 				B5A4E0411E93D7AF00488437 /* LaunchScreen.storyboard */,
 				B5E23D271E9C8BB4002E5923 /* dinoTime.mp3 */,
+				B50384A71EA1B9CE009ABD40 /* dinoHit.wav */,
+				B50384A91EA1BA0C009ABD40 /* manhit.wav */,
+				B50384B31EA1D515009ABD40 /* theme.mp3 */,
+				B50384B11EA1D461009ABD40 /* ending.mp3 */,
+				B50384AD1EA1BC04009ABD40 /* death.wav */,
+				B50384B51EA1D6C9009ABD40 /* titlem.mp3 */,
+				B50384AB1EA1BBF9009ABD40 /* bite.wav */,
+				B50384AF1EA1C001009ABD40 /* poof.wav */,
+				B50384A31EA1B923009ABD40 /* starwin.wav */,
+				B50384A51EA1B97D009ABD40 /* shoot.wav */,
 				B5E23D251E9C8886002E5923 /* Pacman.wav */,
 				B5E23D211E9B32B0002E5923 /* VT323-Regular.ttf */,
 				B5A4E0441E93D7AF00488437 /* Info.plist */,
@@ -257,12 +287,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5A4E03E1E93D7AF00488437 /* Main.storyboard in Resources */,
+				B50384AA1EA1BA0C009ABD40 /* manhit.wav in Resources */,
+				B50384A41EA1B923009ABD40 /* starwin.wav in Resources */,
+				B50384B21EA1D461009ABD40 /* ending.mp3 in Resources */,
+				B50384A61EA1B97D009ABD40 /* shoot.wav in Resources */,
 				B5A4E0401E93D7AF00488437 /* Assets.xcassets in Resources */,
 				B5E23D221E9B32B0002E5923 /* VT323-Regular.ttf in Resources */,
+				B50384B61EA1D6C9009ABD40 /* titlem.mp3 in Resources */,
 				B5E23D261E9C8886002E5923 /* Pacman.wav in Resources */,
-				B558C04F1E93E1BA00E29195 /* A4-image-resources in Resources */,
+				B50384AE1EA1BC04009ABD40 /* death.wav in Resources */,
 				B5A4E0431E93D7AF00488437 /* LaunchScreen.storyboard in Resources */,
 				B5E23D281E9C8BB4002E5923 /* dinoTime.mp3 in Resources */,
+				B50384B01EA1C001009ABD40 /* poof.wav in Resources */,
+				B50384AC1EA1BBF9009ABD40 /* bite.wav in Resources */,
+				B50384A81EA1B9CE009ABD40 /* dinoHit.wav in Resources */,
+				B50384B41EA1D515009ABD40 /* theme.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,6 +330,7 @@
 				B5A4E03B1E93D7AF00488437 /* GameViewController.swift in Sources */,
 				B5A4E0331E93D7AF00488437 /* AppDelegate.swift in Sources */,
 				B5E23D241E9C7D91002E5923 /* GameOver.swift in Sources */,
+				B50384A21E9D3A0D009ABD40 /* Score.swift in Sources */,
 				B52B79701E96761C007418ED /* GridCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

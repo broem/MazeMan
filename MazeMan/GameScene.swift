@@ -15,13 +15,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //    var entities = [GKEntity]()
 //    var graphs = [String : GKGraph]()
     
-    let intro = SKAction.playSoundFileNamed("Pacman.wav", waitForCompletion: true)
-    let playTime = SKAction.playSoundFileNamed("dinoTime.mp3", waitForCompletion: true)
-    
+    let intro = SKAction.playSoundFileNamed("Pacman.wav", waitForCompletion: false)
+    let playTime = SKAudioNode(fileNamed: "theme.mp3")
+    let bite = SKAction.playSoundFileNamed("bite.wav", waitForCompletion: false)
+    let death = SKAction.playSoundFileNamed("death.wav", waitForCompletion: false)
+    let starWin = SKAction.playSoundFileNamed("starwin.wav", waitForCompletion: false)
+    let shoot = SKAction.playSoundFileNamed("shoot.wav", waitForCompletion: false)
+    let dinoHit = SKAction.playSoundFileNamed("dinoHit.wav", waitForCompletion: false)
+    let manhit = SKAction.playSoundFileNamed("manhit.wav", waitForCompletion: false)
+    let firehit = SKAction.playSoundFileNamed("poof.wav", waitForCompletion: false)
     
     var testGrid = [GridCell]()
     var counter = 0
    
+    var scoreArray = [Score]()
+    
     var bsize = 0
     var hsize = 0
     
@@ -48,6 +56,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //gravity
     var gravityTimer = Timer()
     var gravityWarning = Timer()
+    
+    // rock timer
+    var addRockTime = Timer()
     
     // rock spawning
     var rockTime = Timer()
@@ -86,7 +97,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func didMove(to view: SKView) {
 //        print("\(mano)")
-        let runner = SKAction.repeatForever(playTime)
+//        let runner = SKAction.repeatForever(playTime)
         
         bsize = Int(size.width/CGFloat(16))
         self.physicsWorld.contactDelegate = self
@@ -98,72 +109,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // gen 2 rand nums
         // while equal, make sure not equal
-        let r1 = Int(arc4random_uniform(15))
-        var r2 = Int(arc4random_uniform(15))
-        print("\(r1) and \(r2)")
-        while r1 == r2 {
-            r2 = Int(arc4random_uniform(15))
-        }
-        
-        // set bottom row
-        for i in 0...15{
-            
-            var block = SKSpriteNode(imageNamed: "block")
-            
-            if i == r1 {
-                block = SKSpriteNode(imageNamed: "water")
-                block.name = "waters"
-            }
-            if i == r2 {
-                block = SKSpriteNode(imageNamed: "water")
-                block.name = "waters"
-            }
-            
-            block.size = CGSize(width: bsize, height: bsize)
-//            block.setScale = 0.5
-//            block.setScale(0.5)
-            var posit = Int(block.frame.width) * i
-            posit += bsize/2
-            block.position = CGPoint(x: CGFloat(posit), y: block.frame.height/2)
 
-            block.accessibilityLabel = "block\(i)"
-            
-            block.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize, height: bsize))
-            block.physicsBody?.isDynamic = false
-            block.physicsBody?.categoryBitMask = PhysicsCategory.ground.rawValue
-//            block.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
-//            block.physicsBody?.categoryBitMask = ground
-//            block.physicsBody?.contactTestBitMask = mano
-            
-            if block.name == "waters" {
-                block.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize, height: bsize))
-                print("block pos: \(block.position)")
-                waterSpot.append(block.position)
-                block.physicsBody?.categoryBitMask = PhysicsCategory.water.rawValue
-//                block.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
-//                block.physicsBody?.categoryBitMask = water
-//                block.physicsBody?.contactTestBitMask = mano
-                block.physicsBody?.isDynamic = false
-            }
-
-            addChild(block)
-        }
-        // set top rows
-        for i in 0...15{
-            let block = SKSpriteNode(imageNamed: "block") // top row
-            let block1 = SKSpriteNode(imageNamed: "block")
-            
-            block1.size = CGSize(width: bsize, height: bsize)
-            block.size = CGSize(width: bsize, height: bsize)
-            
-            var posit = Int(block.frame.width) * i
-            posit += bsize/2
-            block.position = CGPoint(x: CGFloat(posit), y: (size.height-32))
-            block1.position = CGPoint(x: CGFloat(posit), y: size.height-96)
-
-            addChild(block)
-            addChild(block1)
-        }
         
         man.size = CGSize(width: bsize, height:bsize)
         man.position = CGPoint(x: size.width/2, y: size.height/2)
@@ -174,7 +120,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         addChild(man)
-        
+        makeFloorCeiling()
         gravityTime()
         statusPanel()
         updatePanel("Welcome CAVEMAN")
@@ -194,8 +140,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addBitMasks()
         updateScore()
         
+        addingRocks()
+    
+        let delay = DispatchTime.now() + 5.0
+        DispatchQueue.main.asyncAfter(deadline: delay) {
+            self.backgroundMusic()}
+        
         self.run(intro)
-        self.run(runner)
+        
+//        self.run(runner)
         
         let swipeRight = UISwipeGestureRecognizer()
         swipeRight.addTarget(self, action: #selector(rightSwipe))
@@ -219,6 +172,93 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
+    func backgroundMusic() {
+        playTime.autoplayLooped = true
+        self.addChild(playTime)
+    }
+    
+    func addingRocks() {
+        addRockTime = Timer.scheduledTimer(withTimeInterval: 30, repeats: true){_ in
+            
+            self.rocks += 10
+            if self.rocks > 20 {
+                self.rocks = 20
+            }
+            
+        }
+    }
+    
+    func makeFloorCeiling(){
+        let r1 = Int(arc4random_uniform(15))
+        var r2 = Int(arc4random_uniform(15))
+        print("\(r1) and \(r2)")
+        while r1 == r2 {
+            r2 = Int(arc4random_uniform(15))
+        }
+        
+        // set bottom row
+        for i in 0...15{
+            
+            var block = SKSpriteNode(imageNamed: "block")
+            
+            if i == r1 {
+                block = SKSpriteNode(imageNamed: "water")
+                block.name = "waters"
+            }
+            if i == r2 {
+                block = SKSpriteNode(imageNamed: "water")
+                block.name = "waters"
+            }
+            
+            block.size = CGSize(width: bsize, height: bsize)
+            //            block.setScale = 0.5
+            //            block.setScale(0.5)
+            var posit = Int(block.frame.width) * i
+            posit += bsize/2
+            block.position = CGPoint(x: CGFloat(posit), y: block.frame.height/2)
+            
+            block.accessibilityLabel = "block\(i)"
+            
+            block.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize, height: bsize))
+            block.physicsBody?.isDynamic = false
+            
+            block.physicsBody?.categoryBitMask = PhysicsCategory.ground.rawValue
+            //            block.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
+            //            block.physicsBody?.categoryBitMask = ground
+            //            block.physicsBody?.contactTestBitMask = mano
+            
+            if block.name == "waters" {
+                block.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize, height: bsize))
+                print("block pos: \(block.position)")
+                waterSpot.append(block.position)
+                block.physicsBody?.categoryBitMask = PhysicsCategory.water.rawValue
+                //                block.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
+                //                block.physicsBody?.categoryBitMask = water
+                //                block.physicsBody?.contactTestBitMask = mano
+                block.physicsBody?.isDynamic = false
+            }
+            block.zPosition = 1
+            addChild(block)
+        }
+        // set top rows
+        for i in 0...15{
+            let block = SKSpriteNode(imageNamed: "block") // top row
+            let block1 = SKSpriteNode(imageNamed: "block")
+            
+            block1.size = CGSize(width: bsize, height: bsize)
+            block.size = CGSize(width: bsize, height: bsize)
+            
+            var posit = Int(block.frame.width) * i
+            posit += bsize/2
+            block.position = CGPoint(x: CGFloat(posit), y: (size.height-32))
+            block1.position = CGPoint(x: CGFloat(posit), y: size.height-96)
+            block.zPosition = 1
+            block1.zPosition = 1
+            addChild(block)
+            addChild(block1)
+        }
+    }
+    
     func spawnStar() {
 //        var ok = testGrid.count
 //        print("size of grid =  \(ok)")
@@ -236,15 +276,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        print("star here at : \(testGrid[rand].location)")
         star.position = starPlace.location
         
-        if starPlace.location
+//        if starPlace.location
         
         star.size = CGSize(width: bsize, height: bsize)
-        star.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize, height: bsize))
+        star.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize-10, height: bsize-10))
         star.physicsBody?.isDynamic = true
         star.physicsBody?.categoryBitMask = PhysicsCategory.star.rawValue
         star.physicsBody?.collisionBitMask = 0
+        star.zPosition = 1
         star.physicsBody?.affectedByGravity = false
-        star.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
+        star.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue | PhysicsCategory.blocks.rawValue
         addChild(star)
         
     }
@@ -262,12 +303,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         food.position = testGrid[rand].location
         food.size = CGSize(width: bsize, height: bsize)
-        food.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize, height: bsize))
+        food.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bsize-10, height: bsize-10))
         food.physicsBody?.isDynamic = true
         food.physicsBody?.categoryBitMask = PhysicsCategory.food.rawValue
         food.physicsBody?.collisionBitMask = 0
+        food.zPosition = 1
         food.physicsBody?.affectedByGravity = false
-        food.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue | PhysicsCategory.stega.rawValue | PhysicsCategory.rex.rawValue | PhysicsCategory.red.rawValue
+        food.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue | PhysicsCategory.stega.rawValue | PhysicsCategory.rex.rawValue | PhysicsCategory.red.rawValue | PhysicsCategory.blocks.rawValue
         addChild(food)
         
     }
@@ -286,9 +328,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 fireBall.physicsBody?.affectedByGravity = false
                 fireBall.physicsBody?.categoryBitMask = PhysicsCategory.fireBall.rawValue
                 fireBall.physicsBody?.collisionBitMask = 0
+                fireBall.zPosition = 1
                 fireBall.physicsBody?.friction = 0.0
                 fireBall.physicsBody?.velocity = CGVector(dx: 0, dy: -70)
-                fireBall.physicsBody?.contactTestBitMask = PhysicsCategory.subfloor.rawValue | PhysicsCategory.rock.rawValue | PhysicsCategory.man.rawValue
+                fireBall.physicsBody?.contactTestBitMask = PhysicsCategory.subfloor.rawValue | PhysicsCategory.man.rawValue
                 self.addChild(fireBall)
             }
         }
@@ -307,6 +350,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         fly.physicsBody?.contactTestBitMask = PhysicsCategory.ground.rawValue
         fly.physicsBody?.collisionBitMask = 0
+        fly.zPosition = 1
         fly.physicsBody?.velocity = CGVector(dx: 70, dy: 0)
         addChild(fly)
         fireZeBalls()
@@ -332,9 +376,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         red.physicsBody?.isDynamic = true
         red.physicsBody?.affectedByGravity = false
         red.physicsBody?.linearDamping = 0.0
+        red.zPosition = 1
         red.physicsBody?.categoryBitMask = PhysicsCategory.red.rawValue
         //        dino.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
-        red.physicsBody?.contactTestBitMask = PhysicsCategory.ground.rawValue | PhysicsCategory.blocks.rawValue | PhysicsCategory.ceiling.rawValue | PhysicsCategory.rock.rawValue | PhysicsCategory.man.rawValue  //        dino.physicsBody?.collisionBitMask = PhysicsCategory.ceiling.rawValue
+        red.physicsBody?.contactTestBitMask = PhysicsCategory.ground.rawValue | PhysicsCategory.blocks.rawValue | PhysicsCategory.ceiling.rawValue | PhysicsCategory.rock.rawValue | PhysicsCategory.man.rawValue | PhysicsCategory.subfloor.rawValue //        dino.physicsBody?.collisionBitMask = PhysicsCategory.ceiling.rawValue
         
         red.physicsBody?.collisionBitMask = 0
 //        red.physicsBody?.velocity = CGVector(dx: redDir, dy: 0)
@@ -355,7 +400,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rex.physicsBody?.categoryBitMask = PhysicsCategory.rex.rawValue
         //        dino.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
         rex.physicsBody?.contactTestBitMask = PhysicsCategory.ground.rawValue | PhysicsCategory.man.rawValue       //        dino.physicsBody?.collisionBitMask = PhysicsCategory.ceiling.rawValue
-        
+        rex.zPosition = 1
         rex.physicsBody?.collisionBitMask = 0
         rex.physicsBody?.velocity = CGVector(dx: rexDir, dy: 0)
         addChild(rex)
@@ -379,6 +424,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        dino.physicsBody?.collisionBitMask = PhysicsCategory.ceiling.rawValue
         dino.physicsBody?.angularDamping = 0.0
         dino.physicsBody?.allowsRotation = false
+        dino.zPosition = 1
         dino.physicsBody?.collisionBitMask = 0
         dino.physicsBody?.velocity = CGVector(dx: 0, dy: stegaDir)
         addChild(dino)
@@ -389,11 +435,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let topSide = Int(size.height) - bsize
         statusPan.position = CGPoint(x: Int(size.width/2), y: topSide)
         statusPan.size = CGSize(width: 1000, height: scale)
+        statusPan.zPosition = 2
         addChild(statusPan)
         label.fontSize = 55
         label.fontName = "VT323-Regular"
 //        label.text = "Ok test"
         label.position = CGPoint(x: Int(size.width/2), y: topSide-15)
+        label.zPosition = 3
         addChild(label)
     }
     
@@ -429,6 +477,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         man.physicsBody?.linearDamping = 0.0
         man.physicsBody?.angularDamping = 0.0
         man.physicsBody?.allowsRotation = false
+        man.zPosition = 1
 //        man.physicsBody?.collisionBitMask = PhysicsCategory.ground.rawValue
 //        man.physicsBody?.velocity = CGVector(dx: stegaDir, dy: 0)
         
@@ -437,7 +486,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         man.physicsBody?.categoryBitMask = PhysicsCategory.man.rawValue
         man.physicsBody?.contactTestBitMask = PhysicsCategory.ground.rawValue | PhysicsCategory.ceiling.rawValue | PhysicsCategory.water.rawValue | PhysicsCategory.blocks.rawValue
-        man.physicsBody?.collisionBitMask = PhysicsCategory.ground.rawValue | PhysicsCategory.blocks.rawValue
+        man.physicsBody?.collisionBitMask = PhysicsCategory.ground.rawValue | PhysicsCategory.blocks.rawValue | PhysicsCategory.ceiling.rawValue
 
 //        man.physicsBody?.contactTestBitMask = ceilingo
 //        man.physicsBody?.contactTestBitMask = water
@@ -468,6 +517,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     func rockSpawn() {
         var stop = 1
+        
         rockTime = Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
             if stop == 15 {
                 self.theInvalidator()
@@ -479,6 +529,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let rand = Int(arc4random_uniform(UInt32(self.counter)))
                 rockToPlace = self.testGrid[rand]
             }
+            // lets make array of numbers not to spawn at
             
             rockToPlace.occupied = true
             let block = SKSpriteNode(imageNamed: "block")
@@ -490,12 +541,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //            block.physicsBody?.contactTestBitMask = PhysicsCategory.man.rawValue
 //            block.physicsBody?.categoryBitMask = self.ground
 //            block.physicsBody?.contactTestBitMask = self.mano
-            
+            block.zPosition = 1
             self.addChild(block)
             
             
             stop += 1
-        }
+            }
     }
     
     func bottomStuff() {
@@ -506,30 +557,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         starBot.position = CGPoint(x: bsize/2, y: bsize/2)
         starBot.size = CGSize(width: bsize, height: bsize)
+        starBot.zPosition = 2
         botStar.fontSize = 30
         botStar.fontName = "VT323-Regular"
         botStar.position = CGPoint(x: bsize/2, y: (bsize/2)-10)
+        botStar.zPosition = 3
         addChild(starBot)
         
         rockBot.position = CGPoint(x: (bsize/2)+bsize, y: (bsize/2))
         rockBot.size = CGSize(width: bsize, height: bsize)
+        rockBot.zPosition = 2
         botRock.fontSize = 30
         botRock.fontName = "VT323-Regular"
         botRock.position = CGPoint(x: (bsize/2)+bsize, y: (bsize/2)-10)
+        botRock.zPosition = 3
         addChild(rockBot)
         
         heartBot.position = CGPoint(x: (bsize/2)+(bsize*2), y: bsize/2)
         heartBot.size = CGSize(width: bsize, height: bsize)
+        heartBot.zPosition = 2
         botHeart.fontSize = 30
         botHeart.fontName = "VT323-Regular"
         botHeart.position = CGPoint(x: (bsize/2)+(bsize*2), y: (bsize/2)-10)
+        botHeart.zPosition = 3
         addChild(heartBot)
         
         batteryBot.position = CGPoint(x: (bsize/2)+(bsize*3)+20, y: bsize/2)
         batteryBot.size = CGSize(width: bsize+60, height: bsize*2)
+        batteryBot.zPosition = 2
         botBat.fontSize = 40
         botBat.fontName = "VT323-Regular"
         botBat.position = CGPoint(x: (bsize/2)+(bsize*3)+20, y: (bsize/2)-10)
+        botBat.zPosition = 3
         addChild(batteryBot)
        
     }
@@ -541,7 +600,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(botBat)
         stars = 0
         rocks = 10
-        life = 300
+        life = 399
+//        battery = 100
 //        hearts = Int(round(Double(life/100)))+1
 //        battery = Int(round(Double((life/300)*100)))
 //        print("\(battery)")
@@ -551,6 +611,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func globalTimer() {
         dmgTime = Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
             self.life -= 1
+//            self.battery -= 1
             self.updateScore()
             self.checkLife()
         }
@@ -564,15 +625,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func updateScore() {
-        hearts = Int(round(Double(life/100)))+1
-        battery = Int(round((Double(life)/300)*100))
+        hearts = Int(round(Double(life/100)))
+        battery = life%100
+
         botStar.text = "\(stars)"
         botRock.text = "\(rocks)"
         botHeart.text = "\(hearts)"
         botBat.text = "\(battery)"
-        print("life: \(life)")
-        print("heart: \(hearts)")
-        print("Bat: \(battery)")
+//        print("life: \(life)")
+//        print("heart: \(hearts)")
+//        print("Bat: \(battery)")
+        if battery == 0 {
+            battery = 100
+        }
     }
     
     func theInvalidator(){
@@ -621,7 +686,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // STEGA
         if (contact.bodyA.categoryBitMask == PhysicsCategory.stega.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ceiling.rawValue) {
-            print("dino HERE")
+//            print("dino HERE")
 //            dino.position.y = dino.position.y-10
             dino.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             let rand = Int(arc4random_uniform(4))
@@ -630,7 +695,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.stegaDir = self.stegaDir * -1
                 self.dino.physicsBody?.velocity = CGVector(dx: 0, dy: self.stegaDir)}
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.stega.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ceiling.rawValue) {
-            print("dino HERE")
+//            print("dino HERE")
 //            dino.position.y = dino.position.y-10
             dino.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             let rand = Int(arc4random_uniform(4))+1
@@ -641,7 +706,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if (contact.bodyA.categoryBitMask == PhysicsCategory.stega.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.subfloor.rawValue) {
-            print("dino HERE low")
+//            print("dino HERE low")
             dino.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             let rand = Int(arc4random_uniform(4))+1
             let delay = DispatchTime.now() + Double(rand)
@@ -649,7 +714,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.stegaDir = self.stegaDir * -1
                 self.dino.physicsBody?.velocity = CGVector(dx: 0, dy: self.stegaDir)}
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.stega.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.subfloor.rawValue) {
-            print("dino HERE")
+//            print("dino HERE")
             dino.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             let rand = Int(arc4random_uniform(4))
             let delay = DispatchTime.now() + Double(rand)
@@ -660,16 +725,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if (contact.bodyA.categoryBitMask == PhysicsCategory.stega.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
+            self.run(manhit)
             removeLife(60)
             
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.stega.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
+            self.run(manhit)
             removeLife(60)
         }
         
         //REX
         if (contact.bodyA.categoryBitMask == PhysicsCategory.rex.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ground.rawValue) {
-            print("rex HERE")
+//            print("rex HERE")
             rex.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             let rand = Int(arc4random_uniform(4))
             let delay = DispatchTime.now() + Double(rand)
@@ -678,7 +745,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.rex.xScale = self.rex.xScale * -1.0
                 self.rex.physicsBody?.velocity = CGVector(dx: self.rexDir, dy: 0)}
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.rex.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ground.rawValue) {
-            print("rex HERE")
+//            print("rex HERE")
             rex.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             let rand = Int(arc4random_uniform(4))
             let delay = DispatchTime.now() + Double(rand)
@@ -689,9 +756,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if (contact.bodyA.categoryBitMask == PhysicsCategory.rex.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.man.rawValue) {
+            self.run(manhit)
             removeLife(80)
             
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.rex.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.man.rawValue) {
+            self.run(manhit)
             removeLife(80)
         }
         
@@ -701,8 +770,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // check the bounds, if its near DONT go that way
         // figure out rotation
         // this is the ugliest thing ive ever created
-        if (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ground.rawValue) || (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.blocks.rawValue) || (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ceiling.rawValue) {
-            print("reddino HERE")
+        if (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ground.rawValue) || (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.blocks.rawValue) || (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ceiling.rawValue) ||  (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.subfloor.rawValue){
+//            print("reddino HERE")
             
             var atTop = false
             var atLeft = false
@@ -790,8 +859,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             
 
-        } else if (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ground.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.blocks.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ceiling.rawValue){
-            print("reddino HERE")
+        } else if (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ground.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.blocks.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ceiling.rawValue) || (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.subfloor.rawValue){
+//            print("reddino HERE")
             
             var atTop = false
             var atLeft = false
@@ -819,7 +888,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             red.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             if yspot >= testGrid[129].location.y-20 {
-                print("wtf does this work!?") // then he cant go up!!!
+//                print("wtf does this work!?") // then he cant go up!!!
                 atTop = true
 //                red.position = CGPoint(x: xspot, y: yspot-10) // move away from ceiling
             }
@@ -878,10 +947,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if (contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
+            self.run(manhit)
             removeLife(100)
             
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
+            self.run(manhit)
             removeLife(100)
         }
         
@@ -889,12 +960,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // FLy
         if (contact.bodyA.categoryBitMask == PhysicsCategory.fly.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.ground.rawValue) {
-            print("fly HERE")
+//            print("fly HERE")
             fly.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             self.flyDir = self.flyDir * -1
             self.fly.physicsBody?.velocity = CGVector(dx: self.flyDir, dy: 0)
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.fly.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.ground.rawValue) {
-            print("fly HERE")
+//            print("fly HERE")
             fly.physicsBody?.velocity = (CGVector(dx: 0, dy: 0))
             self.flyDir = self.flyDir * -1
             self.fly.physicsBody?.velocity = CGVector(dx: self.flyDir, dy: 0)
@@ -914,27 +985,63 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if (contact.bodyA.categoryBitMask == PhysicsCategory.fireBall.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
+            self.run(manhit)
             removeLife(100)
             
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.fireBall.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
+            self.run(manhit)
             removeLife(100)
+        }
+        if (contact.bodyA.categoryBitMask == PhysicsCategory.fireBall.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.rock.rawValue) {
+            
+            label.text = "You Quenched The Fire"
+            self.run(firehit)
+            let ball = contact.bodyA.node
+            ball?.removeFromParent()
+        }
+        else if(contact.bodyB.categoryBitMask == PhysicsCategory.fireBall.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.rock.rawValue) {
+            
+            label.text = "You Blew Out The Fire"
+            self.run(firehit)
+            let ball = contact.bodyB.node
+            ball?.removeFromParent()
         }
         
         // star
         if (contact.bodyA.categoryBitMask == PhysicsCategory.star.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
             star.removeFromParent()
+            self.run(starWin)
+            label.text = "Congrats You Got A Star!!"
             testGrid[starLoc].occupied = false
             curscore += 1
+            stars += 1
+            updateScore()
             spawnStar()
             
             
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.star.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
             star.removeFromParent()
+            self.run(starWin)
+            label.text = "You Are A Star!"
             testGrid[starLoc].occupied = false
             curscore += 1
+            stars += 1
+            updateScore()
+            spawnStar()
+        }
+        
+        if (contact.bodyA.categoryBitMask == PhysicsCategory.star.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.blocks.rawValue) {
+            //            print("rex HERE")
+            star.removeFromParent()
+            spawnStar()
+            
+            
+        } else if (contact.bodyB.categoryBitMask == PhysicsCategory.star.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.blocks.rawValue) {
+            //            print("rex HERE")
+            star.removeFromParent()
             spawnStar()
         }
         
@@ -942,6 +1049,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contact.bodyA.categoryBitMask == PhysicsCategory.food.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
             food.removeFromParent()
+            label.text = "Mmm Food!"
+            self.run(bite)
             testGrid[foodLoc].occupied = false
             addLife()
             spawnFood()
@@ -950,6 +1059,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else if (contact.bodyB.categoryBitMask == PhysicsCategory.food.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.man.rawValue) {
             //            print("rex HERE")
             food.removeFromParent()
+            label.text = "That Was Delicious!"
+            self.run(bite)
             testGrid[foodLoc].occupied = false
             addLife()
             spawnFood()
@@ -972,11 +1083,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             DispatchQueue.main.asyncAfter(deadline: delay) {
                 self.spawnFood()}
         }
+        
+        if (contact.bodyA.categoryBitMask == PhysicsCategory.food.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.blocks.rawValue) {
+            //            print("rex HERE")
+            food.removeFromParent()
+            spawnFood()
+            
+            
+        } else if (contact.bodyB.categoryBitMask == PhysicsCategory.food.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.blocks.rawValue) {
+            //            print("rex HERE")
+            food.removeFromParent()
+            spawnFood()
+        }
 
         // rocks
         if (contact.bodyA.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.stega.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.stega.rawValue) {
             label.text = "You Killed The Yellow Dino!"
             dino.removeFromParent()
+            self.run(dinoHit)
 //            print("HIT")
             let rand = Int(arc4random_uniform(5)) + 1
             let delay = DispatchTime.now() + Double(rand)
@@ -988,6 +1112,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contact.bodyA.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.rex.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.rex.rawValue) {
             label.text = "You DESTROYED T-REX!!"
             rex.removeFromParent()
+            self.run(dinoHit)
 //            print("HIT")
             let rand = Int(arc4random_uniform(5)) + 1
             let delay = DispatchTime.now() + Double(rand)
@@ -997,8 +1122,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if (contact.bodyA.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.red.rawValue) || (contact.bodyB.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.red.rawValue) {
-            label.text = "You Killed The Illusive RED"
+            label.text = "You Killed The Ellusive RED"
             red.removeFromParent()
+            self.run(dinoHit)
             //            print("HIT")
             let rand = Int(arc4random_uniform(5)) + 1
             let delay = DispatchTime.now() + Double(rand)
@@ -1007,18 +1133,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
         }
 
-        if (contact.bodyA.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyB.categoryBitMask == PhysicsCategory.fireBall.rawValue) {
-            
-            label.text = "You Quinched The Fire"
-            if let ball = contact.bodyB.node{
-                ball.removeFromParent()}
-        }
-        else if(contact.bodyB.categoryBitMask == PhysicsCategory.rock.rawValue && contact.bodyA.categoryBitMask == PhysicsCategory.fireBall.rawValue) {
-            
-            label.text = "You Blew Out The Fire"
-            if let ball = contact.bodyB.node{
-                ball.removeFromParent()}
-        }
+        
 
         
         
@@ -1026,13 +1141,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
 }
 
-    func leftSwipe(){ man.physicsBody?.velocity = (CGVector(dx: -100, dy: 0)) }
+    func leftSwipe(){ man.physicsBody?.velocity = (CGVector(dx: -50, dy: 0)) }
     
-    func rightSwipe(){ man.physicsBody?.velocity = (CGVector(dx: 100, dy: 0)) }
+    func rightSwipe(){ man.physicsBody?.velocity = (CGVector(dx: 50, dy: 0)) }
     
-    func upSwipe(){ man.physicsBody?.velocity = (CGVector(dx: 0, dy: 100)) }
+    func upSwipe(){ man.physicsBody?.velocity = (CGVector(dx: 0, dy: 50)) }
     
-    func downSwipe(){man.physicsBody?.velocity = (CGVector(dx: 0, dy: -100)) }
+    func downSwipe(){man.physicsBody?.velocity = (CGVector(dx: 0, dy: -50)) }
     
     func addLife() {
         life += 50
@@ -1084,20 +1199,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     // this logic came from reywenderlich.com
-    func adds(left: CGPoint, right: CGPoint) -> CGPoint {
-        return CGPoint(x: left.x + right.x, y: left.y + right.y)
+    func adds(l: CGPoint, r: CGPoint) -> CGPoint {
+        return CGPoint(x: l.x + r.x, y: l.y + r.y)
     }
     
-    func subs(left: CGPoint, right: CGPoint) -> CGPoint {
-        return CGPoint(x: left.x - right.x, y: left.y - right.y)
+    func subs(l: CGPoint, r: CGPoint) -> CGPoint {
+        return CGPoint(x: l.x - r.x, y: l.y - r.y)
     }
     
-    func mult(point: CGPoint, scalar: CGFloat) -> CGPoint {
-        return CGPoint(x: point.x * scalar, y: point.y * scalar)
+    func mult(p: CGPoint, s: CGFloat) -> CGPoint {
+        return CGPoint(x: p.x * s, y: p.y * s)
     }
     
-    func divs(point: CGPoint, scalar: CGFloat) -> CGPoint {
-        return CGPoint(x: point.x / scalar, y: point.y / scalar)
+    func divs(p: CGPoint, s: CGFloat) -> CGPoint {
+        return CGPoint(x: p.x / s, y: p.y / s)
     }
     
     func sqrt(a: CGFloat) -> CGFloat {
@@ -1111,7 +1226,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func norm(off: CGPoint) -> CGPoint {
-        return divs(point: off, scalar: len(off: off))
+        return divs(p: off, s: len(off: off))
     }
     
     
@@ -1123,7 +1238,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         let touchLocation = touch.location(in: self)
         
-
+        if(rocks > 0) {
+        rocks -= 1
+        self.run(shoot)
         let rock = SKSpriteNode(imageNamed: "rock")
         rock.position = man.position
         rock.size = CGSize(width: bsize, height: bsize)
@@ -1131,29 +1248,37 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rock.physicsBody?.affectedByGravity = false
         rock.physicsBody?.collisionBitMask = 0
         rock.physicsBody?.categoryBitMask = PhysicsCategory.rock.rawValue
+        rock.physicsBody?.usesPreciseCollisionDetection = true
 //        rock.physicsBody?.contactTestBitMask = PhysicsCategory.stega.rawValue
         rock.physicsBody?.contactTestBitMask = PhysicsCategory.red.rawValue | PhysicsCategory.rex.rawValue | PhysicsCategory.fireBall.rawValue | PhysicsCategory.stega.rawValue
-        let offset = subs(left: touchLocation, right: rock.position)
+        let offset = subs(l: touchLocation, r: rock.position)
         
-
+        rock.zPosition = 1
         addChild(rock)
         let direction = norm(off: offset)
-        let shootAmount =  mult(point: direction,  scalar: 1000)
+        let shootAmount =  mult(p: direction,  s: 1000)
         
-        let realDest = adds(left: shootAmount, right: rock.position)
+        let realDest = adds(l: shootAmount, r: rock.position)
         // constant speed
         let actionMove = SKAction.move(to: realDest, duration: 2.0)
         let actionMoveDone = SKAction.removeFromParent()
         rock.run(SKAction.sequence([actionMove, actionMoveDone]))
-        
+        }
     }
     
     func GameOverMan() {
+        self.run(death)
         self.removeAllChildren()
         dmgTime.invalidate()
         let flipTransition = SKTransition.doorsCloseHorizontal(withDuration: 2.0)
-        let gameOverScene = GameOver(size: self.size, score: curscore)
+        let gameOverScene = GameOver(size: self.size)
         gameOverScene.scaleMode = .aspectFill
+        gameOverScene.score = curscore
+//        scoreArray.append(curscore)
+//        let scoreData = NSKeyedArchiver.archivedData(withRootObject: scoreArray)
+//        UserDefaults.standard.set(scoreData, forKey: "score")
+//        UserDefaults.standard.synchronize()
+
     
         self.view?.presentScene(gameOverScene, transition: flipTransition)
 
